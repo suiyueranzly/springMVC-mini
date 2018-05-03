@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 核心servlet 扫描类并进行注入
  * Created by zhangyq on 2017/8/25.
  */
 
@@ -33,9 +34,9 @@ public class DispactherServlet extends HttpServlet {
     //将扫描到的所有文件
     private List<String> packageNames = new ArrayList<>();
     //注解属性对应各层对象实例的map
-    private Map<String, Object> instanceMaps = new HashMap<String, Object>();
+    private Map<String, Object> instanceMaps = new HashMap<>();
     //存储url和对应method的map
-    private Map<String, Method> methodMaps = new HashMap<String, Method>();
+    private Map<String, Method> methodMaps = new HashMap<>();
 
     @Override
     public void init() throws ServletException {
@@ -80,10 +81,9 @@ public class DispactherServlet extends HttpServlet {
                 for (Method method : methods) {
                     //判断是否有RequestMapping注解
                     if (method.isAnnotationPresent(RequestMapping.class)) {
-                        String methodUrl = ((RequestMapping) method.getAnnotation(RequestMapping.class)).value();
+                        String methodUrl = method.getAnnotation(RequestMapping.class).value();
                         methodMaps.put("/" + baseUrl + "/" + methodUrl, method);
                     } else {
-                        continue;
                     }
 
                 }
@@ -105,7 +105,7 @@ public class DispactherServlet extends HttpServlet {
                 if (field.isAnnotationPresent(Qualifier.class)) {
                     //如果有  则注入
                     //取到注解的名字
-                    String qualifierValueString = ((Qualifier) field.getAnnotation(Qualifier.class)).value();
+                    String qualifierValueString = field.getAnnotation(Qualifier.class).value();
                     field.setAccessible(true);
                     field.set(entry.getValue(), instanceMaps.get(qualifierValueString));
 
@@ -147,7 +147,6 @@ public class DispactherServlet extends HttpServlet {
                 instanceMaps.put(key, instance);
             } else {
                 //如果没有注解
-                continue;
             }
         }
     }
@@ -204,7 +203,7 @@ public class DispactherServlet extends HttpServlet {
         //
         String[] split = requestURI.split("/");
         int index = 2;
-        if("".equals(split[0])||null==split[0]){
+        if ("".equals(split[0]) || null == split[0]) {
             index = 1;
         }
         String className = split[index];
